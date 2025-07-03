@@ -21,5 +21,5 @@ A responsive weather application that displays real-time forecasts, 5-day predic
 ## Setup
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/weather-app.git
+   git clone https://github.com/Robotking007/Wheather-App
    cd weather-app
