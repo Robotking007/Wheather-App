@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast App</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --secondary: #34a853;
+            --danger: #ea4335;
+            --warning: #fbbc05;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .unit-toggle {
+            display: flex;
+            align-items: center;
+        }
+        
+        .unit-toggle span {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .current-weather {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .location-info h2 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--dark);
+        }
+        
+        .date {
+            color: #666;
+            margin: 5px 0 15px;
+        }
+        
+        .weather-main {
+            display: flex;
+            align-items: center;
+        }
+        
+        .temperature {
+            font-size: 48px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .forecast-day {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .forecast-day h3 {
+            margin: 0 0 10px;
+            color: var(--dark);
+        }
+        
+        .forecast-temps {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .max-temp {
+            font-weight: bold;
+            color: var(--danger);
+        }
+        
+        .min-temp {
+            color: var(--primary);
+        }
+        
+        .forecast-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .suggestions {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .suggestions h2 {
+            margin-top: 0;
+            color: var(--dark);
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .suggestion-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        @media (max-width: 768px) {
+            .current-weather {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .weather-main {
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .forecast {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation for weather icons */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .animated-icon {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Sunny animation */
+        .sunny {
+            position: relative;
+        }
+        
+        .sunny:after {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle, rgba(255,204,0,0.4) 0%, rgba(255,204,0,0) 70%);
+            border-radius: 50%;
+            animation: sunny-rays 4s infinite;
+        }
+        
+        @keyframes sunny-rays {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 0.4; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+        
+        /* Rain animation */
+        .rainy {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rainy:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><line x1="1" y1="1" x2="1" y2="3" stroke="%234285f4" stroke-width="0.5"/></svg>');
+            animation: rain 0.5s linear infinite;
+        }
+        
+        @keyframes rain {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Weather Forecast</div>
+            <div class="unit-toggle">
+                <span>°C</span>
+                <label class="switch">
+                    <input type="checkbox" id="unitToggle">
+                    <span class="slider"></span>
+                </label>
+                <span>°F</span>
+            </div>
+        </header>
+        
+        <div class="current-weather">
+            <div class="location-info">
+                <h2 id="location">Loading...</h2>
+                <div class="date" id="currentDate"></div>
+                <div id="conditions">--</div>
+            </div>
+            <div class="weather-main">
+                <div class="temperature" id="currentTemp">--°</div>
+                <div class="weather-icon" id="weatherIcon"></div>
+            </div>
+        </div>
+        
+        <h2>5-Day Forecast</h2>
+        <div class="forecast" id="forecastContainer"></div>
+        
+        <div class="chart-container">
+            <h2>Historical Temperature</h2>
+            <canvas id="historyChart"></canvas>
+        </div>
+        
+        <div class="suggestions">
+            <h2>Activity Suggestions</h2>
+            <div id="suggestionsList"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables
+        let currentUnit = 'C';
+        let currentLocation = '';
+        let historyChart = null;
+        
+        // DOM elements
+        const unitToggle = document.getElementById('unitToggle');
+        const locationElement = document.getElementById('location');
+        const currentDateElement = document.getElementById('currentDate');
+        const conditionsElement = document.getElementById('conditions');
+        const currentTempElement = document.getElementById('currentTemp');
+        const weatherIconElement = document.getElementById('weatherIcon');
+        const forecastContainer = document.getElementById('forecastContainer');
+        const suggestionsList = document.getElementById('suggestionsList');
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current date
+            currentDateElement.textContent = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Event listeners
+            unitToggle.addEventListener('change', toggleUnit);
+            
+            // Get user location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        fetchWeatherData(lat, lon);
+                    },
+                    error => {
+                        console.error("Geolocation error:", error);
+                        // Default to New York if geolocation fails
+                        fetchWeatherData(40.7128, -74.0060);
+                    }
+                );
+            } else {
+                // Browser doesn't support Geolocation
+                fetchWeatherData(40.7128, -74.0060);
+            }
+        });
+        
+        // Fetch weather data from backend
+        async function fetchWeatherData(lat, lon) {
+            try {
+                // Get current weather
+                const currentResponse = await fetch(`/api/current?lat=${lat}&lon=${lon}`);
+                const currentData = await currentResponse.json();
+                
+                currentLocation = currentData.location;
+                updateCurrentWeather(currentData);
+                
+                // Get forecast
+                const forecastResponse = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`);
+                const forecastData = await forecastResponse.json();
+                updateForecast(forecastData);
+                
+                // Get historical data
+                const historyResponse = await fetch(`/api/history?location=${currentLocation}&days=30`);
+                const historyData = await historyResponse.json();
+                updateHistoryChart(historyData);
+                
+                // Generate suggestions
+                generateSuggestions(currentData, forecastData[0]);
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+            }
+        }
+        
+        // Update current weather display
+        function updateCurrentWeather(data) {
+            locationElement.textContent = data.location;
+            conditionsElement.textContent = data.conditions;
+            
+            if (currentUnit === 'C') {
+                currentTempElement.textContent = `${Math.round(data.temperature)}°C`;
+            } else {
+                const tempF = celsiusToFahrenheit(data.temperature);
+                currentTempElement.textContent = `${Math.round(tempF)}°F`;
+            }
+            
+            // Set weather icon with animation class
+            weatherIconElement.className = 'weather-icon';
+            weatherIconElement.classList.add(getIconAnimationClass(data.conditions));
+            weatherIconElement.style.backgroundImage = `url(https://developer.accuweather.com/sites/default/files/${data.icon < 10 ? '0' + data.icon : data.icon}-s.png)`;
+        }
+        
+        // Update 5-day forecast
+        function updateForecast(forecastData) {
+            forecastContainer.innerHTML = '';
+            
+            forecastData.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'forecast-day';
+                
+                const date = new Date(day.date);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                
+                let maxTemp, minTemp;
+                if (currentUnit === 'C') {
+                    maxTemp = Math.round(day.max_temp);
+                    minTemp = Math.round(day.min_temp);
+                } else {
+                    maxTemp = Math.round(celsiusToFahrenheit(day.max_temp));
+                    minTemp = Math.round(celsiusToFahrenheit(day.min_temp));
+                }
+                
+                dayElement.innerHTML = `
+                    <h3>${dayName}</h3>
+                    <div class="forecast-icon ${getIconAnimationClass(day.day_conditions)}" 
+                         style="background-image: url(https://developer.accuweather.com/sites/default/files/${day.day_icon < 10 ? '0' + day.day_icon : day.day_icon}-s.png)"></div>
+                    <div>${day.day_conditions}</div>
+                    <div class="forecast-temps">
+                        <span class="max-temp">${maxTemp}°</span>
+                        <span class="min-temp">${minTemp}°</span>
+                    </div>
+                `;
+                
+                forecastContainer.appendChild(dayElement);
+            });
+        }
+        
+        // Update historical data chart
+        function updateHistoryChart(historyData) {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            
+            // Process data
+            const labels = historyData.map(item => item.date).reverse();
+            const temps = historyData.map(item => {
+                return currentUnit === 'C' ? item.temperature : celsiusToFahrenheit(item.temperature);
+            }).reverse();
+            
+            // Destroy previous chart if exists
+            if (historyChart) {
+                historyChart.destroy();
+            }
+            
+            // Create new chart
+            historyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Temperature (°${currentUnit})`,
+                        data: temps,
+                        borderColor: 'rgba(66, 133, 244, 1)',
+                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: `Temperature (°${currentUnit})`
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Generate activity suggestions
+        function generateSuggestions(currentData, tomorrowData) {
+            suggestionsList.innerHTML = '';
+            
+            const currentTemp = currentUnit === 'C' ? currentData.temperature : celsiusToFahrenheit(currentData.temperature);
+            const tomorrowTemp = currentUnit === 'C' ? tomorrowData.max_temp : celsiusToFahrenheit(tomorrowData.max_temp);
+            
+            // Suggestions based on current weather
+            if (currentData.conditions.toLowerCase().includes('rain')) {
+                addSuggestion('indoor', 'Visit a museum or art gallery', 'Perfect day for indoor activities!');
+            } else if (currentTemp > (currentUnit === 'C' ? 25 : 77)) {
+                addSuggestion('beach', 'Go to the beach or pool', 'Great weather for swimming!');
+            } else if (currentTemp < (currentUnit === 'C' ? 10 : 50)) {
+                addSuggestion('hot-drink', 'Enjoy a hot drink by the fireplace', 'Stay warm and cozy!');
+            } else {
+                addSuggestion('park', 'Take a walk in the park', 'Lovely weather for outdoor activities!');
+            }
+            
+            // Suggestions based on tomorrow's forecast
+            if (tomorrowData.day_conditions.toLowerCase().includes('sun')) {
+                addSuggestion('hiking', 'Plan a hiking trip for tomorrow', 'Sunny weather ahead!');
+            } else if (tomorrowData.max_temp > (currentUnit === 'C' ? 5 : 41) && 
+                       tomorrowData.day_conditions.toLowerCase().includes('rain')) {
+                addSuggestion('umbrella', 'Don\'t forget your umbrella tomorrow', 'Rain expected, but not too cold.');
+            }
+            
+            // General suggestions
+            if (currentTemp > (currentUnit === 'C' ? 20 : 68) && 
+                tomorrowTemp > (currentUnit === 'C' ? 20 : 68)) {
+                addSuggestion('bbq', 'Plan a barbecue this weekend', 'Warm weather perfect for grilling!');
+            }
+        }
+        
+        function addSuggestion(icon, title, description) {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'suggestion-item';
+            
+            suggestion.innerHTML = `
+                <div class="suggestion-icon" style="background-image: url('icons/${icon}.png')"></div>
+                <div>
+                    <strong>${title}</strong><br>
+                    <small>${description}</small>
+                </div>
+            `;
+            
+            suggestionsList.appendChild(suggestion);
+        }
+        
+        // Toggle between Celsius and Fahrenheit
+        function toggleUnit() {
+            currentUnit = unitToggle.checked ? 'F' : 'C';
+            
+            // Refresh all data displays
+            fetchWeatherDataFromCache();
+        }
+        
+        // Helper function to convert Celsius to Fahrenheit
+        function celsiusToFahrenheit(c) {
+            return (c * 9/5) + 32;
+        }
+        
+        // Get appropriate animation class for weather conditions
+        function getIconAnimationClass(conditions) {
+            const cond = conditions.toLowerCase();
+            
+            if (cond.includes('sun') || cond.includes('clear')) {
+                return 'animated-icon sunny';
+            } else if (cond.includes('rain') || cond.includes('shower')) {
+                return 'animated-icon rainy';
+            } else if (cond.includes('cloud')) {
+                return 'animated-icon';
+            } else if (cond.includes('snow')) {
+                return 'animated-icon';
+            } else if (cond.includes('thunder') || cond.includes('storm')) {
+                return 'animated-icon';
+            } else {
+                return '';
+            }
+        }
+        
+        // Simulate fetching weather data from cache (in a real app, you would store this)
+        async function fetchWeatherDataFromCache() {
+            // In a real app, you would store the last fetched data
+            // and re-render with the current unit
+            // For this example, we'll just re-fetch
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        fetchWeatherData(lat, lon);
+                    },
+                    error => {
+                        console.error("Geolocation error:", error);
+                    }
+                );
+            }
+        }
+    </script>
+</body>
+</html>

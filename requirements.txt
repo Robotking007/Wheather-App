@@ -1,0 +1,18 @@
+# Core Requirements
+Flask==2.3.2
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Deployment
+gunicorn==20.1.0  # Production server
+
+# Development (Optional)
+pytest==7.4.0     # Testing framework
+flake8==6.1.0     # Code linting
+
+# API Integrations
+geopy==2.4.1      # For city geocoding (if adding location search)
+
+# Database (For future extensions)
+# flask-sqlalchemy==3.0.3
+# psycopg2-binary==2.9.7  # PostgreSQL adapter
