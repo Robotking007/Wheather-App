@@ -1,10 +1,10 @@
 # Core Requirements
 Flask==2.3.2
-requests==2.31.0
+requests==2.32.4
 python-dotenv==1.0.0
 
 # Deployment
-gunicorn==20.1.0  # Production server
+gunicorn==23.0.0  # Production server
 
 # Development (Optional)
 pytest==7.4.0     # Testing framework
